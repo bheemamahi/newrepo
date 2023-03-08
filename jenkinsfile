@@ -7,38 +7,98 @@ pipeline
         {
             steps
             {
-                git 'https://github.com/bheemamahi/newrepo.git'
+                script
+                {
+                    try
+                    {
+                       git 'https://github.com/bheemamahi/newrepo.git' 
+                    }
+                    catch(Exception e1)
+                    {
+                        mail bcc: '', body: 'Jenkins is unable to download dev code from git', cc: '', from: '', replyTo: '', subject: 'Download faild', to: 'git.admin@gmail.com'
+                        exit(1)
+                    }
+                }
             }
         }
         stage('ContinuousBuild')
         {
             steps
             {
-                sh 'mvn package'
+                script
+                {
+                    try
+                    {
+                      sh 'mvn package'  
+                    }
+                    catch(Exception e2)
+                    {
+                      mail bcc: '', body: 'Jenkins is unable to create artifact', cc: '', from: '', replyTo: '', subject: 'Build faild', to: 'dev.teams @gmail.com'  
+                      exit(1)              
+                    }
+                }
+                
             }
         }
         stage('ContinuousDeployment')
         {
             steps
             {
-                deploy adapters: [tomcat9(credentialsId: 'f6b76596-5f2b-41f0-a0d2-13c8d8dafe00', path: '', url: 'http://172.31.88.32:8080')], contextPath: 'testapp2', war: '**/*.war'
+                script
+                {
+                    try
+                    {
+                       deploy adapters: [tomcat9(credentialsId: 'f6b76596-5f2b-41f0-a0d2-13c8d8dafe00', path: '', url: 'http://172.31.88.32:8080')], contextPath: 'testapp2', war: '**/*.war' 
+                    }
+                    catch(Exception e3)
+                    {
+                        mail bcc: '', body: 'Jenkins is unable to deploy the artifact into tomcat9 on the qaserver', cc: '', from: '', replyTo: '', subject: 'Deployement faild', to: 'middleware.team @gmail.com'
+                        exit(1)
+                    }
+                }
+                
             }
         }
         stage('ContinuousTesting')
         {
             steps
             {
-                git 'https://github.com/intelliqittrainings/FunctionalTesting.git'
-                sh 'java -jar /var/lib/jenkins/workspace/Declaretivepipeline1/testing.jar'
+                script
+                {
+                    try
+                    {
+                       git 'https://github.com/intelliqittrainings/FunctionalTesting.git'
+                       sh 'java -jar /var/lib/jenkins/workspace/Declaretivepipeline1/testing.jar' 
+                    }
+                    catch(Exception e4)
+                    {
+                        mail bcc: '', body: 'Selenium scripts are failing ', cc: '', from: '', replyTo: '', subject: 'Testing failed ', to: 'test.team @gmail.com'
+                        exit(1)
+                    }
+                }
+                
             }
         }
-        stage('ContinuousDelivery')
+        stage('continuousdelivey')
         {
             steps
             {
-                deploy adapters: [tomcat9(credentialsId: 'f6b76596-5f2b-41f0-a0d2-13c8d8dafe00', path: '', url: 'http://172.31.90.130:8080')], contextPath: 'prodapp2', war: '**/*.war'
+                script
+                {
+                    try
+                    {
+                      deploy adapters: [tomcat9(credentialsId: 'f6b76596-5f2b-41f0-a0d2-13c8d8dafe00', path: '', url: 'http://172.31.90.130:8080')], contextPath: 'prodapp2', war: '**/*.war'     
+                    }
+                    catch(Exception e5)
+                    {
+                        mail bcc: '', body: 'Jenkins is unable to deploy into tomcat on the prod server', cc: '', from: '', replyTo: '', subject: 'Delivery failed ', to: 'dev.team @gmail.com'
+                    }
+                }
             }
+            
         }
+       
     }
-
+   
 }
+
